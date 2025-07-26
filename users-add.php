@@ -1,80 +1,120 @@
+<?php
+        // Start the session.
+        session_start();
+        if(!isset($_SESSION['user'])) header('location: login.php');
+        $_SESSION['table'] = 'users';
+        $_SESSION['redirect_to'] = 'users-add.php';
+
+        $user = $_SESSION['user'];
+?>
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Dashboard - Inventory Management System</title> 
-    <link rel="stylesheet" type="text/css" href="css/login.css">
-    <script src="https://use.fontawesome.com/0c7a3095b5.js"></script>
+<head>
+        <title>Add User - Inventory Management System</title>
+        <?php include('partials/app-header-scripts.php'); ?>
 </head>
+
 <body>
-    <div id="dashboardMainContainer">
-        <div class="dashboard_sidebar" id="dashboard_sidebar">
-            <h3 class="dashboard_logo" id="dashboard_logo">IMS</h3>
-            <div class="dashboard_sidebar_user">
-                <img src="images/user/chuot.png" alt="User image." id="userImage"/>
-                <span>Amal</span>
-            </div>
-            <div class="dashboard_sidebar_menus">
-                <ul class="dashboard_menu_lists">
-                    <li class="menuActive">
-                        <a href="dashboard.html"><i class="fa fa-dashboard"></i> <span class="menuText"> Dashboard</span></a>
-                    </li>
-                    <li>
-                        <a href="products.html"><i class="fa fa-line-chart"></i> <span class="menuText"> Product</span></a>
-                    </li>
-                    <li>
-                        <a href="transactions.html"><i class="fa fa-dollar"></i> <span class="menuText"> Transaction</span></a>
-                    </li>
-                    <li>
-                        <a href="ledger.html"><i class="fa fa-book"></i> <span class="menuText"> General Ledger</span></a>
-                    </li>
-                </ul>
-            </div>
+        <div id="dashboardMainContainer">
+                <?php include('partials/app-sidebar.php') ?>
+                <div class="dasboard_content_container" id="dasboard_content_container">
+                        <?php include('partials/app-topnav.php') ?>
+                        <div class="dashboard_content">
+                                <?php if(in_array('user_create', $user['permissions'])) { ?>
+                                <div class="dashboard_content_main">            
+                                        <div class="row">
+                                                <div class="column column-12">
+                                                        <h1 class="section_header"><i class="fa fa-plus"></i> Create User</h1>
+                                                        <div id="userAddFormContainer">                                         
+                                                                <form action="database/add-user-direct.php" method="POST" class="appForm">
+                                                                        <div class="appFormInputContainer">
+                                                                                <label for="first_name">First Name</label>
+                                                                                <input type="text" class="appFormInput" id="first_name" name="first_name" required />   
+                                                                        </div>
+                                                                        <div class="appFormInputContainer">
+                                                                                <label for="last_name">Last Name</label>
+                                                                                <input type="text" class="appFormInput" id="last_name" name="last_name" required />     
+                                                                        </div>
+                                                                        <div class="appFormInputContainer">
+                                                                                <label for="email">Email</label>
+                                                                                <input type="email" class="appFormInput" id="email" name="email" required />    
+                                                                        </div>
+                                                                        <div class="appFormInputContainer">
+                                                                                <label for="password">Password</label>
+                                                                                <input type="password" class="appFormInput" id="password" name="password" required />   
+                                                                        </div>
+                                                                        <input type="hidden" id="permission_el" name="permissions" >
+                                                                        <!-- 
+                                                                                Create a section for permissions
+                                                                                Organized by modules > functions 
+                                                                         -->
+                                                                         <?php include('partials/permissions.php') ?>
+                                                                        <button type="submit" class="appBtn"><i class="fa fa-plus"></i> Add User</button>
+                                                                </form> 
+                                                                <?php 
+                                                                        if(isset($_SESSION['response'])){
+                                                                                $response_message = $_SESSION['response']['message'];
+                                                                                $is_success = $_SESSION['response']['success'];
+                                                                ?>
+                                                                        <div class="responseMessage">
+                                                                                <p class="responseMessage <?= $is_success ? 'responseMessage__success' : 'responseMessage__error' ?>" >
+                                                                                        <?= $response_message ?>
+                                                                                </p>
+                                                                        </div>
+                                                                <?php unset($_SESSION['response']); }  ?>
+                                                        </div>  
+                                                </div>
+                                        </div>                                  
+                                </div>
+                                <?php } else { ?>
+                                        <div id="errorMessage">Access denied.</div>
+                                <?php } ?>
+                        </div>
+                </div>
         </div>
-        <div class="dashboard_content_container" id="dashboard_content_container">
-            <div class="dashboard_topNav">
-                <a href="" id="toggleBtn"><i class="fa fa-navicon"></i></a>
-                <a href="" id="logoutBtn"><i class="fa fa-power-off"></i> Log-out</a>
-            </div>
-            <div class="dashboard_content">
-                <div class="dashboard_content_main">[Content]</div>
-            </div>
-        </div>
-    </div>
+        <?php include('partials/app-scripts.php'); ?>
+
 <script>
-    var sideBarIsOpen = true;
+        function loadScript(){
+        this.permissions = [];
 
-    toggleBtn.addEventListener( 'click', (event) => {
-        event.preventDefault();
+        this.initialize  = function(){
+                this.registerEvents();
+        },
 
-        if (sideBarIsOpen) {
-            dashboard_sidebar.style.width = '10%';
-            dashboard_sidebar.style.transition = '0.4s all';
-            dashboard_content_container.style.width = '90%';
-            dashboard_logo.style.fontSize = '60px';
-            userImage.style.width = '60px';
+        this.registerEvents = function(){
+                // Click
+                document.addEventListener('click', function(e){
+                        let target = e.target;
 
-            menuIcons = document.getElementsByClassName('menuText');
-            for(var i = 0; i < menuIcons.length; i++){
-                menuIcons[i].style.display = 'none';
-            }
+                        // Check if class name - moduleFunc - is clicked
+                        if(target.classList.contains('moduleFunc')){
+                                // Get value
+                                let permissionName = target.dataset.value;
 
-            document.getElementsByClassName('dashboard_menu_lists')[0].style.textAlign = 'center';
-            sideBarIsOpen = false;
-        } else {
-            dashboard_sidebar.style.width = '20%';
-            dashboard_content_container.style.width = '80%';
-            dashboard_logo.style.fontSize = '80px';
-            userImage.style.width = '70px';
+                                // Set the active class
+                                if(target.classList.contains('permissionActive')){
+                                        target.classList.remove('permissionActive');
 
-            menuIcons = document.getElementsByClassName('menuText');
-            for(var i = 0; i < menuIcons.length; i++){
-                menuIcons[i].style.display = 'inline-block';
-            }
+                                        // Remove from array
+                                        script.permissions = script.permissions.filter((name) => {
+                                                return name !== permissionName;
+                                        });
+                                } else {
+                                        target.classList.add('permissionActive');
+                                        script.permissions.push(permissionName);
+                                }
 
-            document.getElementsByClassName('dashboard_menu_lists')[0].style.textAlign = 'left';
-            sideBarIsOpen = true;
+                                // Update the hidden element
+                                document.getElementById('permission_el')
+                                        .value = script.permissions.join(',');
+                        }
+                });
         }
-    })
+        }
+
+        var script = new loadScript;
+        script.initialize();
 </script>
 </body>
 </html>
