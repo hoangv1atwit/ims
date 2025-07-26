@@ -1,0 +1,26 @@
+<?php
+// Database Configuration
+// Copy this file to connection.php and update with your database credentials
+
+$servername = "localhost";     // Database host
+$username = "your_username";   // Database username
+$password = "your_password";   // Database password
+$dbname = "inventory_db";      // Database name
+
+try {
+    // Create PDO connection
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    
+    // Set PDO error mode to exception
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Set charset to UTF-8
+    $conn->exec("set names utf8");
+    
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+
+// For PostgreSQL, use this instead:
+// $conn = new PDO("pgsql:host=$servername;dbname=$dbname", $username, $password);
+?>
